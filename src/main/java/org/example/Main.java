@@ -15,7 +15,7 @@ public class Main {
         String timeFormat = args[2];
 
         try {
-            BusScheduler scheduler = new BusScheduler("path/to/gtfs.zip");
+            BusScheduler scheduler = new BusScheduler("src/gtfs.zip");
             List<String> nextBuses = scheduler.getNextBuses(stopId, numberOfBuses, timeFormat);
             nextBuses.forEach(System.out::println);
         } catch (IOException e) {
