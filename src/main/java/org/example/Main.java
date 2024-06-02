@@ -1,25 +1,28 @@
 package org.example;
 
-import java.io.IOException;
-import java.util.List;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
-public class Main {
+@Command(name = "busscheduler", mixinStandardHelpOptions = true, version = "1.0",
+        description = "BusScheduler",
+        subcommands = {BusScheduler.class})
+public class Main implements Runnable {
+
+    @Option(names = {"-v", "--version"}, versionHelp = true, description = "Display info v")
+    boolean versionInfoRequested;
+
+    @Option(names = {"-h", "--help"}, usageHelp = true, description = "Display help")
+    boolean usageHelpRequested;
+
     public static void main(String[] args) {
-        if (args.length < 3) {
-            System.out.println("Usage: busTrips <stopId> <number_of_buses> <relative|absolute>");
-            return;
-        }
+        int exitCode = new CommandLine(new Main()).execute(args);
+        System.exit(exitCode);
+    }
 
-        String stopId = args[0];
-        int numberOfBuses = Integer.parseInt(args[1]);
-        String timeFormat = args[2];
+    @Override
+    public void run() {
 
-        try {
-            BusScheduler scheduler = new BusScheduler("path/to/gtfs.zip");
-            List<String> nextBuses = scheduler.getNextBuses(stopId, numberOfBuses, timeFormat);
-            nextBuses.forEach(System.out::println);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        System.out.println("BusScheduler is running.");
     }
 }

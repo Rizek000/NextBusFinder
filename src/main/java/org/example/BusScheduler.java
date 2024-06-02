@@ -1,64 +1,73 @@
 package org.example;
 
-import org.onebusaway.gtfs.model.StopTime;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collectors;
 
-public class BusScheduler {
 
-    private GTFSReaderUtil gtfsReader;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine;
 
-    public BusScheduler(String gtfsZipPath) throws IOException {
-        this.gtfsReader = new GTFSReaderUtil(gtfsZipPath);
-    }
+import java.io.*;
 
-    public List<String> getNextBuses(String stopId, int maxBuses, String timeFormat) {
-        LocalDateTime currentTime = LocalDateTime.now();
-        LocalDateTime endTime = currentTime.plusHours(2);
 
-        List<StopTime> stopTimes = gtfsReader.getStopTimes(stopId);
-        List<StopTime> filteredStopTimes = stopTimes.stream()
-                .filter(stopTime -> {
-                    LocalTime arrivalTime = secondsSinceMidnightToLocalTime(stopTime.getArrivalTime());
-                    return arrivalTime.isAfter(currentTime.toLocalTime()) &&
-                            arrivalTime.isBefore(endTime.toLocalTime());
-                })
-                .sorted((st1, st2) -> Integer.compare(st1.getDepartureTime(), st2.getDepartureTime()))
-                .collect(Collectors.toList());
+@Command(name = "scheduler", mixinStandardHelpOptions = true, description = "Commands to manage the bus schedule")
+public class BusScheduler implements Runnable {
 
-        return filteredStopTimes.stream()
-                .limit(maxBuses)
-                .map(stopTime -> formatOutput(stopTime, timeFormat, currentTime))
-                .collect(Collectors.toList());
-    }
+    @Option(names = {"-f", "--file"}, description = "GTFS file to process", required = true)
+    private String gtfsFile;
 
-    private LocalTime secondsSinceMidnightToLocalTime(int seconds) {
-        return LocalTime.ofSecondOfDay(seconds);
-    }
-
-    private String formatOutput(StopTime stopTime, String timeFormat, LocalDateTime currentTime) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-        LocalTime time = secondsSinceMidnightToLocalTime(stopTime.getDepartureTime());
-        if (timeFormat.equals("relative")) {
-            long minutes = java.time.Duration.between(currentTime.toLocalTime(), time).toMinutes();
-            return String.format("Route %s: %d mins", stopTime.getTrip().getRoute().getId().getId(), minutes);
-        } else {
-            return String.format("Route %s: %s", stopTime.getTrip().getRoute().getId().getId(), time.format(formatter));
-        }
-    }
+    @Option(names = {"-o", "--output"}, description = "Output directory")
+    private String outputDir;
 
     public static void main(String[] args) {
+        int exitCode = new CommandLine(new BusScheduler()).execute(args);
+        System.exit(exitCode);
+    }
 
+    @Override
+    public void run() {
+        System.out.println("Processing GTFS file: " + gtfsFile);
+        if (outputDir != null) {
+            System.out.println("Output directory: " + outputDir);
+        }
+        processGTFSFile(gtfsFile, outputDir);
+    }
+
+    private void processGTFSFile(String gtfsFile, String outputDir) {
         try {
-            BusScheduler scheduler = new BusScheduler("path/to/gtfs.zip");
-            List<String> nextBuses = scheduler.getNextBuses("12345", 5, "absolute");
-            nextBuses.forEach(System.out::println);
+            File file = new File(gtfsFile);
+            if (!file.exists()) {
+                System.err.println("GTFS file not found: " + gtfsFile);
+                return;
+            }
+
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+            while ((line = br.readLine()) != null) {
+
+                System.out.println(line);
+
+            }
+            br.close();
+
+            if (outputDir != null) {
+                File outDir = new File(outputDir);
+                if (!outDir.exists()) {
+                    if (!outDir.mkdirs()) {
+                        System.err.println("Failed to create output directory: " + outputDir);
+                        return;
+                    }
+                }
+
+                File outputFile = new File(outDir, "output.txt");
+                BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile));
+                bw.write("Processing completed successfully.");
+                bw.close();
+            }
+
         } catch (IOException e) {
+            System.err.println("Error processing GTFS file: " + e.getMessage());
             e.printStackTrace();
         }
     }
