@@ -29,23 +29,11 @@
     </repositories>
 
     <dependencies>
-        <!-- Core GTFS Library -->
         <dependency>
             <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-gtfs</artifactId>
+            <artifactId>onebusaway-gtfs-modules</artifactId>
             <version>1.4.16</version>
-        </dependency>
-        <!-- Optional Hibernate GTFS Database Persistence -->
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-gtfs-hibernate</artifactId>
-            <version>1.4.16</version>
-        </dependency>
-        <!-- Optional GTFS Transformation Library -->
-        <dependency>
-            <groupId>org.onebusaway</groupId>
-            <artifactId>onebusaway-gtfs-transformer</artifactId>
-            <version>1.4.16</version>
+            <type>pom</type>
         </dependency>
     </dependencies>
 

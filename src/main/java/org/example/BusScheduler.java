@@ -55,8 +55,8 @@ public class BusScheduler {
     public static void main(String[] args) {
 
         try {
-            BusScheduler scheduler = new BusScheduler("path/to/gtfs.zip");
-            List<String> nextBuses = scheduler.getNextBuses("12345", 5, "absolute");
+            BusScheduler scheduler = new BusScheduler("src/gtfs.zip");
+            List<String> nextBuses = scheduler.getNextBuses("2", 6, "absolute");
             nextBuses.forEach(System.out::println);
         } catch (IOException e) {
             e.printStackTrace();
